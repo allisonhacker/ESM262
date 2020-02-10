@@ -1,0 +1,18 @@
+---
+title: "ESM 262 Week 1"
+author: "Allison Hacker"
+date: "2/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Why I am taking this course:
+
+Computing seems like a powerful tool in envrionmental science. I am interested in improving my programming and computer skills and learning how to apply computing methods to environmental management. I am also interested in being less intimidated by programming and computers in general. 
+
+### Data science background:
+
+I have done data management and analysis in Excel, Access, and GIS prior to coming to Bren. My only coding experience has come from ESM 206.
