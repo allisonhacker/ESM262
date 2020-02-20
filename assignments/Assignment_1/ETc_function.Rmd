@@ -1,0 +1,42 @@
+---
+title: "Crop Evapotranspiration"
+author: "Allison Hacker"
+date: "2/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(here)
+source("ETc.R")
+```
+
+Crop evapotranspiration is important because it is indicative of how much water a crop requires. Crop ET is calculated using the Penman-Monteith equation and takes both climatic factors and crop-specific factors into account. This allows us to easily calculate the evapotranspiration for mulitple crops under a variety of different environmental conditions.
+
+### Evapotranspiration based on wind speed
+```{r}
+nsample <- 100
+#crop_coeff <- rnorm(mean = 0.9, sd = 0.2, n = nsample)
+wind_speeds <- rnorm(mean = 6, sd = 2, n = nsample)
+ETc_norm <- data.frame(wind_speed = wind_speeds, ETc = NA)
+ETc_norm$ETc = ETc(wind_speeds, 1.2)
+
+ggplot(data = ETc_norm, aes(x = wind_speeds, y = ETc))+
+  geom_point()+
+  theme_bw()
+```
+
+### Evapotranspiration based on crop coefficient 
+
+```{r}
+nsample <- 100
+crop_coeffs <- runif(nsample, min = 0.2, max = 2)
+ETc_unif <- data.frame(crop_coeff = crop_coeffs, ETc = NA)
+ETc_unif$ETc = ETc(6, crop_coeffs)
+
+ggplot(data = ETc_unif, aes(x = crop_coeffs, y = ETc))+
+  geom_point()+
+  theme_bw()
+```
+The graphs show that crop evapotranspiration increases as wind speed increases. Evapotranspiration is also higher for crops that have a greater crop coefficient (Kc).
