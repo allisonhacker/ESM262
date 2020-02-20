@@ -15,9 +15,8 @@ source("ETc.R")
 Crop evapotranspiration is important because it is indicative of how much water a crop requires. Crop ET is calculated using the Penman-Monteith equation and takes both climatic factors and crop-specific factors into account. This allows us to easily calculate the evapotranspiration for mulitple crops under a variety of different environmental conditions.
 
 ### Evapotranspiration based on wind speed
-```{r}
+```{r, warning=FALSE}
 nsample <- 100
-#crop_coeff <- rnorm(mean = 0.9, sd = 0.2, n = nsample)
 wind_speeds <- rnorm(mean = 6, sd = 2, n = nsample)
 ETc_norm <- data.frame(wind_speed = wind_speeds, ETc = NA)
 ETc_norm$ETc = ETc(wind_speeds, 1.2)
