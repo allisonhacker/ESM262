@@ -1,0 +1,254 @@
+---
+title: 'Using functions with Data'
+author: "Naomi Tague"
+date: "January, 2020"
+output:
+  slidy_presentation:
+   highlight: pygments
+  html_document: default
+  pdf_document: default
+  ioslides_presentation:
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo =TRUE)
+knitr::opts_chunk$set(error=TRUE)
+library(tidyverse)
+```
+
+# A reminder about naming objects in R
+
+Note that by *sourcing* a function - it will essentially overwrite anything else in your workspace with the same name 
+
+*Warning* - if you name your function, the same as an internal R function, your new function will take precidence, and **hide** the internal R function
+
+In R, functions are organized in **Packages**
+
+You've probably loaded different packages, that provide different functions
+There are a number of packages **base**, **stats** that are automatically loaded
+You can usually find the package associated with any function from online help
+
+* consider **runif** function in the **stats** package
+
+[runif](https://stat.ethz.ch/R-manual/R-patched/library/stats/html/Uniform.html)
+
+To use a function associated with a particular package
+
+**package::function**
+
+
+# Generating Data for your function
+
+You often want to apply your function to a range of data, that can come from
+
+* files you read in to R (measured height and flow rate values)
+* output from other functions/models 
+* data that you generate
+  * sensitivity analysis
+  * testing your model
+  * stochastic models
+
+
+# Random Numbers as Inputs
+
+* sample from distributions (normal, uniform, poisson), which distribution depends on the model
+* R has many tools for generating samples from distributions with known parameters (such as mean, standard deviation, or min/max)
+  *  generating rainfall for a hydrologic model given know mean and variance of rainfall
+  
+* R also has tools for picking samples from collections 
+  * generating fish catches based on populations for an economic model
+  
+  
+  Others?
+***
+
+# Steps for running your model over multiple inputs
+
+1. design a data structure to store results: sometimes this is automatic but not always
+2. generate the input data
+3. apply to the model
+
+
+
+# Lets consider a new function estimates the power required to keep a car moving at a given speed
+
+
+
+<span style="color:coral">
+**Pb = crolling * m * g * V + 1/2 A * pair * cdrag * V3**
+</span>
+
+where *crolling* and *cdrag* are rolling and aerodynamic resistive coefficients, typical values are 0.015 and 0.3, respectively
+
+*V*: is vehicle speed (assuming no headwind) in m/s (or mps) m: is vehicle mass in kg
+
+*A* is surface area of car (m2)
+
+*g* is acceleration due to gravity (9.8 m/s2) pair = density of air (1.2kg/m3)
+
+*Pb* is power in Watts
+
+
+# Code
+
+```{r powerexample}
+
+#' Power Required by Speed
+#'
+#' This function determines the power required to keep a vehicle moving at 
+#' a given speed
+#' @param cdrag coefficient due to drag default=0.3 
+#' @param crolling coefficient due to rolling/friction default=0.015
+#' @param v vehicle speed (m/2)
+#' @param m vehicle mass (kg)
+#' @param A area of front of vehicle (m2)
+#' @param g acceleration due to gravity (m/s) default=9.8
+#' @param pair (kg/m3) default =1.2
+#' @return power (W)
+
+autopower = function(V, m, A, cdrag=0.3, crolling=0.015,pair=1.2,g=9.8) {
+  P = crolling*m*g*V + 1/2*A*pair*cdrag*V**3
+  return(P)
+}
+
+```
+
+I've also stored the autopower.R function as a file = using the recommended naming convention
+
+**autopower.R**
+
+
+# Generating data for the function
+
+Example use: Imagine we want to see how much power is generated given scenario where we know the mean and standard deviation of vehicles speeds
+
+
+```{r sampling}
+
+#source("./src/dataf/R/autopower.R")
+
+# generate sample speeds from a distribution
+nsample = 100
+speeds = rnorm(mean=25, sd=4, n=nsample)
+
+# Step 1  create data frame to store results 
+# how many simulations, what do you want to keep
+
+#create a dataframe that has rows for each model run
+# columns for height, flowrate and power estimate
+results = data.frame(speed=speeds, power=NA)
+
+head(results)
+
+# if you only have one input and everything elese is the same, R is smart enough
+# to create a set of outputs
+results$power = autopower(V=speeds, A=25, m=20000)
+
+# ALWAYS look at your results to make sure it make sense
+ggplot(results, aes(speed, power/1000))+geom_point()+labs(x="speed in m/s", y="power in kW")
+ggplot(results, aes(x="Across Speed",y=power/1000))+geom_boxplot()+labs(y="power in kW")
+
+```
+
+
+# Multiple inputs 
+
+For a function with more than one input that could have multiple values, R can handle this
+if 
+
+* all (multiple) inputs have the same number of values 
+* all other inputs or paraameters have a single value
+
+
+For other cases, additional instructions would need to be included in the function to help R understand what to do
+
+
+Consider our reservoir function  (see Rmd from functions2 for power_gen.R code)
+
+```{r sampling2}
+
+#source("src/dataf/R/power_gen.R")
+
+power_gen = function(height, flow, rho=1000, g=9.8, Keff=0.8) {
+  # make sure inputs are positive and if not set as NA so result will be NA
+  height = ifelse( (height < 0), NA, height)
+  
+  # an alterative is to exit the function prematurely 
+  flow = ifelse((flow < 0), return("flow must be greater than zero"), flow)
+  
+  #    return("Height cannot be less than 0")
+  
+  # calculate power
+  result = rho * height * flow * g * Keff
+  return(result)
+}
+
+# single
+power_gen(height=2, flow=2)
+
+# multiple heights
+# generate a strucutre to store results
+# consider all heights from 1 to 100
+
+resv_results = data.frame(height=seq(from=1, to=100))
+
+# compute power generated for EACH height
+resv_results$power = power_gen(resv_results$height, flow=2)
+
+# plot
+ggplot(resv_results, aes(height, power))+geom_point(size=3)+labs(y="Power (KW)", x="Height (m)")
+
+# random combinations of height and flow
+resv_results$height = rnorm(mean=10, sd=2, n=100)
+resv_results$flow = rnorm(mean=20, sd=1, n=100)
+# compute power generated for EACH height
+resv_results$power = power_gen(resv_results$height, flow=resv_results$flow)
+
+# plot
+ggplot(resv_results, aes(height, power, col=flow))+geom_point(size=3)+labs(y="Power (KW)", x="Height (m)")
+
+# Unequal lengths - this will "work" but inputs get recycled unclear what is happening
+# NOT recommended
+
+eheight = seq(from=1, to=50)
+eflow = runif(min=0.1, max=2, n=100)
+resv_result = power_gen(eheight, eflow)
+
+# better
+eheight = seq(from=1, to=50)
+eflow = runif(min=0.1, max=2, n=50)
+resv_result = power_gen(eheight, eflow)
+
+# another example of the problem of unequal length inputs
+power_gen(eheight, eflow, g=c(9,10,11))
+
+#better
+g = runif(min=8, max=10, n=50)
+resv_result = power_gen(eheight, eflow, g)
+
+
+```
+# Assignment 1
+
+
+With a partner
+
+Write function to compute something that is of interest to you, make sure it has at least 2 inputs and several parameters
+
+Add some error checking (at least two different kinds)
+
+Save your function in a .R file
+
+(Make sure you add comments to your function)
+
+In an Rmarkdown document, generate saample data for your function in two different ways, 
+
+Apply the data to your function
+
+Graph and add some text describing how to interpret the results
+
+Upload both the function and the Rmarkdown file to your github - in a subfolder called Assignment 1
+
+Add a link to your github site for Assignment 1 on Gauchospace
+

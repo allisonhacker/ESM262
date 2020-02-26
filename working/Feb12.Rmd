@@ -1,0 +1,241 @@
+---
+title: 'Functions Day 2'
+author: "Naomi Tague"
+date: "January, 2020"
+output:
+  slidy_presentation:
+   highlight: pygments
+  html_document: default
+  pdf_document: default
+  ioslides_presentation:
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo =TRUE)
+knitr::opts_chunk$set(error=TRUE)
+library(tidyverse)
+```
+
+
+## STEPS IN Program Design
+
+1. Clearly define your goal in words/figures as precisely as possible what do you want your program to do
+      + modules
+      + for each module,  inputs and parameters
+      + for each module, outputs
+    
+
+2. Implement AND document as you go
+3. Test
+4. Refine
+5. Test again
+6. Create User Documentation and Distribute
+
+---
+
+## Functions in R
+
+Format for a basic function in R
+
+<span style="color:coral">
+\#' documentation that describes inputs, outputs and what the function does
+FUNCTION NAME = function(inputs, parameters) {
+body of the function (manipulation of inputs)
+return(values to return)
+}
+</span>
+
+In R, inputs and parameters are treated the same; but it is useful to think about them separately in designing the model - collectively they are sometimes referred to as arguments
+
+ALWAYS USE Meaningful names for your function, its parameters and variables calculated within the function
+
+---
+
+## A simple function example
+
+Contract
+
+*Input*: Reservoir height (m) and flow rate (m3/sec) (as a single value in time or a time series)
+
+*Output*: Instantaneous power generation (W/s)  (as a single value or value for each reservoir height and flow rate combination)
+
+*Parameters*: KEfficiency, ρ (density of water), g (acceleration due to gravity)
+
+How it wil work - *body* of the function 
+
+P = ρ * h * r * g * KEff;
+
+P is Power in watts, ρ is the density of water (~1000 kg/m3), h is height in meters, r is flow rate in cubic meters per second, g is acceleration due to gravity of 9.8 m/s2, KEff is a coefficient of efficiency ranging from 0 to 1.
+
+---
+## Implementation
+
+* In R we combine inputs/parameters in the first line of the function definition
+
+* we can provide "default" values that can be overwritten by the function user
+
+* Body includes all calculations between { and }
+  + anything inside the body is not "seen" by the workspace so you can re-use variables
+  
+* *return* tells R what the output is
+
+
+```{r eval=TRUE, echo=TRUE  }
+
+# function definition
+power_gen = function(height, flow, rho=1000, g=9.8, Keff=0.8) {
+result = rho * height * flow * g * Keff
+return(result)
+}
+```
+
+---
+# Using the function and scoping
+
+To use the function we substitute "actual" values for each argument (parameter and inputs)
+(unless there are defaults)
+
+R assumes that arguments are in the order that they were specified in the function definition - unless
+you refer to them by name
+```{r eval=TRUE, echo=TRUE  }
+
+power_gen(20,1)
+
+power_gen(height=20, flow=1)
+
+power_gen(flow=1, height=20)
+
+# change the defaults
+# what if efficiencies is less
+
+power_gen(20,1, Keff=0.2)
+
+```
+
+---
+# Scoping
+
+
+The scope of a variable in a program defines where it can be “seen” Variables defined inside a function cannot be “seen” outside of that function
+
+There are advantages to this - the interior of the building block does not ‘interfere’ with other parts of the program
+
+See below
+
+```{r eval=TRUE, echo=TRUE  }
+
+# specifying function name without () shows code
+# try it for internal R functions
+power_gen
+
+# use the function and save the results
+reservoir1 = power_gen(height=4, flow=7)
+
+reservoir2 = power_gen(height=4, flow=7, Keff=0.2)
+
+# note that internal variables are not defined
+height
+Keff
+results
+
+# only the outputs
+reservoir1
+reservoir2
+
+
+```
+
+---
+# Some conventions (helpful later in the course)
+
+* Always write your function in a text editor and then copy into R
+
+* By convention we name files with functions in them by the name of the function.R
+e.g. **power_gen.R**
+
+* you can have R read a text file by source(“power_gen.R”) - make sure you are in the right working directory
+
+* keep organized by keeping all functions in a subdirectory called *R*
+
+*  Eventually we will want our function to be part of a package (a library of many functions) - to create a package you must use this convention (name.R) place all function in a directory called “R”
+
+
+Make your own power generation function - add some complexity (cut off height for power generation; maximum capacity?)
+
+
+# Error Checking
+
+What will your function do if user gives you garbage data, imagine that computes microbial growth rates with temperature
+
+* Two options
+
+<span style="color:skyblue">
+1. error-checking (nice)
+</span>
+
+ if temperature < -100 or > 100
+ 
+*  set results to NA
+*  or exit function with a warming
+ 
+<span style="color:skyblue"> 
+2. assume user reads the contract :) return unrealistic values
+</span>
+
+if input -999.0, will still try to output growth rate
+ 
+ 
+ Error-checking is helpful if you are going to build a model made up of many functions- why?
+ 
+
+# How to add error checking
+
+Consider this example
+
+```{r eval=TRUE, echo=TRUE  }
+
+power_gen = function(height, flow, rho=1000, g=9.8, Keff=0.8) {
+  # make sure inputs are positive and if not set as NA so result will be NA
+   if (height < 0) height=NA
+  
+ # an alterative is to exit the function prematurely 
+  if (flow < 0) return("Flow cannot be less than 0")
+  #    return("Height cannot be less than 0")
+      
+  # calculate power
+    result = rho * height * flow * g * Keff
+  return(result)
+}
+
+power_gen(2,3)
+power_gen(-2,3)
+power_gen(2,-3)
+```
+
+
+While this works for a case with one height and one flow
+It will have problems if we use multiple heights - (a later topic)
+
+A better implementation if you think the function might be run for multiple heights
+
+```{r eval=TRUE, echo=TRUE  }
+
+power_gen = function(height, flow, rho=1000, g=9.8, Keff=0.8) {
+  # make sure inputs are positive and if not set as NA so result will be NA
+   height = ifelse( (height < 0), NA, height)
+  
+ # an alterative is to exit the function prematurely 
+  flow = ifelse((flow < 0), return("flow must be greater than zero"), flow)
+
+  #    return("Height cannot be less than 0")
+      
+  # calculate power
+    result = rho * height * flow * g * Keff
+  return(result)
+}
+
+power_gen(2,3)
+power_gen(-2,3)
+power_gen(2,-3)
+```
