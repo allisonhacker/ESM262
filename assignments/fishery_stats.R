@@ -35,6 +35,14 @@ revenue1 <- revenue %>%
   mutate(price = case_when(
     fish == prices$fish[1]  ~ prices$price[1]))
 
+revenue$price = case_when(
+    fish == prices$fish[1]  ~ prices$price[1])
+
+for(i in 1:length(revenue)){
+  revenue1$price = case_when(
+    revenue1$fish[] == prices$fish[i]  ~ prices$price[i])
+}
+
 #############################
 # Write the function
 
