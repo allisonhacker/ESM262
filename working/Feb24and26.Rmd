@@ -564,6 +564,12 @@ Try it
 
 make a string with **sprintf** and add to plot title
 
+```{r}
+num = 12.3456789
+
+sprintf("There are %5.4f things", num)
+```
+
 
 # <span style="color:blue"> Functions with factors 
 
@@ -580,7 +586,7 @@ See
 
 ```{r diversity, echo=TRUE}
 
-source("../../src/dataf/R/compute_simpson_index.R")
+source("../../ESM262/R/compute_simpson_index.R")
 compute_simpson_index
 
 
@@ -669,8 +675,9 @@ sale
 sale$cost
 sale[[4]]
 
-# works but
-#sale[4]
+# works but need to index within cost to get a single value
+
+sale[[4]][1]
 
 
 sum(sale$cost)
@@ -688,7 +695,7 @@ consider *lm*
 ```{r lmlist, echo=TRUE}
 
 # read in some streamflow data
-sage = read.table("../../src/dataf/data/sagedata.txt", header=T)
+sage = read.table("../../ESM262/data/sagedata.txt", header=T)
 names(sage)
 
 # sum to water year
@@ -722,12 +729,17 @@ Lets start with diversity - many be want to know a bit more about the dataset
 ```{r diversitylist, echo=TRUE}
 
 # repeat with a list
-source("../../src/dataf/R/computediversity.R")
+source("../../ESM262/R/computediversity.R")
 
 computediversity
 
 computediversity(catch1)
 computediversity(catch2)
+
+# test function on flowers data
+flowers = read.table("../../ESM262/data/flowers.txt")
+computediversity(flowers$V1)
+head(flowers)
 ```
 
 In class: Try adding to your diversity function: return the rarest species; 
@@ -739,7 +751,7 @@ In class: Try adding to your diversity function: return the rarest species;
  
 ```{r str, echo=FALSE}
 
-source("../../src/dataf/R/compute_season_meanflow.R")
+source("../../ESM262/R/compute_season_meanflow.R")
 
 str = read.table("../src/dataf/data/str.txt", header=T)
 compute_season_flow(str)
