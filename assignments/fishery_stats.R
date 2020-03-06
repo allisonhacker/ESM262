@@ -1,36 +1,36 @@
 ### Assignment 2: Fishing
 
-# create vector of possible fish, possible locations, and fish prices
+library(tidyverse)
+
+# create vectors of possible fish, possible locations, and fish prices
 possible.fish = c("salmon","steelhead","shark","tuna","cod")
 possible.locations = c("A","B","C","D","E")
 fish.prices = runif(min=5, max=10, n=length(possible.fish))
 
-# we can use sample to simulate a random recording of catch by fisherman, lets say we pick 20 fish from the net
-
+# Make table of prices for fish
 prices = data.frame(fish = possible.fish, price = fish.prices) %>% 
   arrange(fish)
 
+# Generate catch data for two sites
 catch_reef = sample(possible.fish, size=50, prob = c(0.2, 0.2, 0.1, 0.1, 0.4), replace=T)
 catch_ocean = sample(possible.fish, size=50, prob = c(0.4, 0.2, 0.1, 0.1, 0.2), replace=T)
   
 catch= data.frame(catch_reef, catch_ocean)
 
-catch
-############################
-df = data.frame(summary(catch[[1]]))
-names(summary(catch[[1]]))
-
 ##########################
+# Get counts of each fish for each location
+
 revenue = data.frame(matrix(nrow=nrow(prices), ncol=ncol(catch)))
 for(i in 1:ncol(catch)){
   revenue[i] = summary(catch[[i]])
 }
 
+# Add fish names to dataframe
 names= names(summary(catch[[1]]))
-names
 revenue$fish = names
 
 ############################
+# How to get fish prices into same dataframe as fish counts to do revenue calculations?
 revenue1 <- revenue %>% 
   mutate(price = case_when(
     fish == prices$fish[1]  ~ prices$price[1]))
@@ -38,10 +38,26 @@ revenue1 <- revenue %>%
 revenue$price = case_when(
     fish == prices$fish[1]  ~ prices$price[1])
 
-for(i in 1:length(revenue)){
-  revenue1$price = case_when(
-    revenue1$fish[] == prices$fish[i]  ~ prices$price[i])
+### One way to get prices into the revenue data frame?
+for(i in 1:length(revenue))
+  {
+  for (j in 1:length(prices))
+  {
+  revenue$price[i]= case_when(
+    revenue$fish[i] == prices$fish[j]  ~ prices$price[j])
+  }
 }
+
+### Another way to do it?
+for(i in 1:length(revenue))
+{
+  for (j in 1:length(prices))
+  {
+    if(revenue$fish[i] == prices$fish[j]) {revenue$price[i] = prices$price[j]} 
+  }
+}
+
+#### But neither one works :(
 
 #############################
 # Write the function
@@ -55,6 +71,7 @@ fishery_stats = function(catch) {
     frequency[i,3] = max(summary(catch[[i]]))
   }
   
+  #Create data frame of counts of each fish at each location
   revenue = as.data.frame(matrix(nrow=nrow(prices), ncol=ncol(catch)))
   for(i in 1:ncol(catch)){
     revenue[i] = summary(catch[[i]])
@@ -62,15 +79,7 @@ fishery_stats = function(catch) {
   names= names(summary(catch[[1]]))
   revenue$fish = names
   
-  data=data.frame((matrix(nrow=nrow(revenue), ncol=ncol(revenue))))
-  for (i in 1:ncol(catch)) {
-    for (j in 1:length(revenue)) {
-      data[i,j]= if catch[ncol(catch),j] == price(value=damages[i],       discount=discount_rates[j],time=yr )
-      
-    }
-  }
-  
   return(revenue)
-  }
+}
 
 fishery_stats(catch)
