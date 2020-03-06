@@ -39,28 +39,31 @@ revenue$price = case_when(
     fish == prices$fish[1]  ~ prices$price[1])
 
 ### One way to get prices into the revenue data frame?
-for(i in 1:length(revenue))
+for(i in 1:nrow(revenue))
   {
-  for (j in 1:length(prices))
+  for (j in 1:nrow(prices))
   {
   revenue$price[i]= case_when(
     revenue$fish[i] == prices$fish[j]  ~ prices$price[j])
   }
 }
+#### But it doesn't work :(
 
 ### Another way to do it?
-for(i in 1:length(revenue))
+for(i in 1:nrow(revenue))
 {
-  for (j in 1:length(prices))
+  for (j in 1:nrow(prices))
   {
     if(revenue$fish[i] == prices$fish[j]) {revenue$price[i] = prices$price[j]} 
   }
 }
+#### This one works!
 
-#### But neither one works :(
+# whichfish = c(1:nrow(prices))
+# revenue$price = prices$price[1]
 
 #############################
-# Write the function
+# Here's the function
 
 fishery_stats = function(catch) {
 #create data frame for most frequent fish caught at each location.
@@ -78,6 +81,15 @@ fishery_stats = function(catch) {
   }
   names= names(summary(catch[[1]]))
   revenue$fish = names
+  
+  # add prices to dataframe
+  for(i in 1:nrow(revenue))
+  {
+    for (j in 1:nrow(prices))
+    {
+      if(revenue$fish[i] == prices$fish[j]) {revenue$price[i] = prices$price[j]} 
+    }
+  }
   
   return(revenue)
 }
