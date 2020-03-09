@@ -95,3 +95,5 @@ fishery_stats = function(catch) {
 }
 
 fishery_stats(catch)
+
+use_data(catch, pkg=“packagename”)
