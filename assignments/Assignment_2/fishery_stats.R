@@ -17,67 +17,6 @@ catch_ocean = sample(possible.fish, size=50, prob = c(0.4, 0.2, 0.1, 0.1, 0.2), 
   
 catch= data.frame(catch_reef, catch_ocean)
 
-##########################
-# Get counts of each fish for each location
-
-revenue = data.frame(matrix(nrow=nrow(prices), ncol=ncol(catch)))
-for(i in 1:ncol(catch)){
-  revenue[i] = summary(catch[[i]])
-}
-
-# Add fish names to dataframe
-names= names(summary(catch[[1]]))
-revenue$fish = names
-
-############################
-# How to get fish prices into same dataframe as fish counts to do revenue calculations?
-revenue1 <- revenue %>% 
-  mutate(price = case_when(
-    fish == prices$fish[1]  ~ prices$price[1]))
-
-revenue$price = case_when(
-    fish == prices$fish[1]  ~ prices$price[1])
-
-### One way to get prices into the revenue data frame?
-for(i in 1:nrow(revenue))
-  {
-  for (j in 1:nrow(prices))
-  {
-  revenue$price[i]= case_when(
-    revenue$fish[i] == prices$fish[j]  ~ prices$price[j])
-  }
-}
-#### But it doesn't work :(
-
-### Another way to do it?
-for(i in 1:nrow(revenue))
-{
-  for (j in 1:nrow(prices))
-  {
-    if(revenue$fish[i] == prices$fish[j]) {revenue$price[i] = prices$price[j]} 
-  }
-}
-
-merge_df= merge(revenue, prices, by= "fish")
-
-revenue_df= as.data.frame(matrix(nrow=nrow(prices), ncol=ncol(catch)))
-for(i in 1:ncol(catch))
-{
-  revenue_df[,i] = fish[,i] * fish$price
-}
-
-revenue_df1= as.data.frame(matrix(nrow=1, ncol=ncol(catch)))
-for(i in 1:ncol(catch)){
-  revenue_df1[i]=sum(revenue_df[,i])
-}
-
-total_revenue=sum(revenue_df1)
-
-#### This one works!
-
-# whichfish = c(1:nrow(prices))
-# revenue$price = prices$price[1]
-
 #############################
 # Here's the function
 
@@ -110,7 +49,7 @@ fishery_stats = function(catch, graph = FALSE, total_as_text = FALSE) {
 # Calculate revenue for each fish at each location
   revenue_df= as.data.frame(matrix(nrow=nrow(prices), ncol=ncol(catch)))
   for(i in 1:ncol(catch)){
-    revenue_df[,i] = fish[,i] * fish$price
+    revenue_df[,i] = revenue[,i] * revenue$price
   }
 
 # Calculate total revenue for each location 

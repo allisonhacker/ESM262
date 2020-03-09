@@ -1,6 +1,6 @@
 ---
 title: "Fishery Function"
-author: "Allison Hacker"
+author: "Allison Hacker and Erin Ristig"
 date: "3/9/2020"
 output: html_document
 ---
@@ -8,7 +8,6 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-# source(fishery_stats.R)
 ```
 
 
