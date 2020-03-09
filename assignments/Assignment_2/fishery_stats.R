@@ -98,7 +98,7 @@ fishery_stats = function(catch, graph = FALSE, total_as_text = FALSE) {
   names= names(summary(catch[[1]]))
   revenue$fish = names
   
-  # Add prices to dataframe
+# Add prices to dataframe
   for(i in 1:nrow(revenue))
   {
     for (j in 1:nrow(prices))
@@ -106,17 +106,20 @@ fishery_stats = function(catch, graph = FALSE, total_as_text = FALSE) {
       if(revenue$fish[i] == prices$fish[j]) {revenue$price[i] = prices$price[j]} 
     }
   }
-  # Calculate Revenue for each fish
+  
+# Calculate revenue for each fish at each location
   revenue_df= as.data.frame(matrix(nrow=nrow(prices), ncol=ncol(catch)))
   for(i in 1:ncol(catch)){
     revenue_df[,i] = fish[,i] * fish$price
   }
-  
+
+# Calculate total revenue for each location 
   revenue_df1= as.data.frame(matrix(nrow=1, ncol=ncol(catch)))
   for(i in 1:ncol(catch)){
     revenue_df1[i]=sum(revenue_df[,i])
   }
-  
+
+# Calculate total fishery revenue  
   total_revenue=sum(revenue_df1)
   
   if(graph == TRUE){
