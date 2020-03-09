@@ -81,7 +81,7 @@ total_revenue=sum(revenue_df1)
 #############################
 # Here's the function
 
-fishery_stats = function(catch, graph = FALSE) {
+fishery_stats = function(catch, graph = FALSE, total_as_text = FALSE) {
 # Create data frame for most frequent fish caught at each location.
   frequency = as.data.frame(matrix(nrow=ncol(catch), ncol=3))
   for(i in 1:ncol(catch)){
@@ -119,8 +119,16 @@ fishery_stats = function(catch, graph = FALSE) {
   
   total_revenue=sum(revenue_df1)
   
-  return(list(frequency, revenue_df1, total_revenue))
+  if(graph == TRUE){
+    revenue_df_longer= pivot_longer(data = revenue_df1, cols = V1:V2, names_to = "location", values_to = "revenue")
+    
+    rev_graph= ggplot(data = revenue_df_longer, aes(x = location, y = revenue)) +
+      geom_col()
+  }
+
+  return(list(frequency, revenue_df1, total_revenue, rev_graph))
 }
 
-fishery_stats(catch)
+
+fishery_stats(catch, graph = TRUE)
 
