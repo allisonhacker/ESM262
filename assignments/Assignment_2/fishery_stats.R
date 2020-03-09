@@ -57,6 +57,22 @@ for(i in 1:nrow(revenue))
     if(revenue$fish[i] == prices$fish[j]) {revenue$price[i] = prices$price[j]} 
   }
 }
+
+merge_df= merge(revenue, prices, by= "fish")
+
+revenue_df= as.data.frame(matrix(nrow=nrow(prices), ncol=ncol(catch)))
+for(i in 1:ncol(catch))
+{
+  revenue_df[,i] = fish[,i] * fish$price
+}
+
+revenue_df1= as.data.frame(matrix(nrow=1, ncol=ncol(catch)))
+for(i in 1:ncol(catch)){
+  revenue_df1[i]=sum(revenue_df[,i])
+}
+
+total_revenue=sum(revenue_df1)
+
 #### This one works!
 
 # whichfish = c(1:nrow(prices))
@@ -65,8 +81,8 @@ for(i in 1:nrow(revenue))
 #############################
 # Here's the function
 
-fishery_stats = function(catch) {
-#create data frame for most frequent fish caught at each location.
+fishery_stats = function(catch, graph = FALSE) {
+# Create data frame for most frequent fish caught at each location.
   frequency = as.data.frame(matrix(nrow=ncol(catch), ncol=3))
   for(i in 1:ncol(catch)){
     frequency[i,1] = colnames(catch)[i] 
@@ -74,7 +90,7 @@ fishery_stats = function(catch) {
     frequency[i,3] = max(summary(catch[[i]]))
   }
   
-  #Create data frame of counts of each fish at each location
+# Create data frame of counts of each fish at each location
   revenue = as.data.frame(matrix(nrow=nrow(prices), ncol=ncol(catch)))
   for(i in 1:ncol(catch)){
     revenue[i] = summary(catch[[i]])
@@ -82,7 +98,7 @@ fishery_stats = function(catch) {
   names= names(summary(catch[[1]]))
   revenue$fish = names
   
-  # add prices to dataframe
+  # Add prices to dataframe
   for(i in 1:nrow(revenue))
   {
     for (j in 1:nrow(prices))
@@ -90,10 +106,21 @@ fishery_stats = function(catch) {
       if(revenue$fish[i] == prices$fish[j]) {revenue$price[i] = prices$price[j]} 
     }
   }
+  # Calculate Revenue for each fish
+  revenue_df= as.data.frame(matrix(nrow=nrow(prices), ncol=ncol(catch)))
+  for(i in 1:ncol(catch)){
+    revenue_df[,i] = fish[,i] * fish$price
+  }
   
-  return(revenue)
+  revenue_df1= as.data.frame(matrix(nrow=1, ncol=ncol(catch)))
+  for(i in 1:ncol(catch)){
+    revenue_df1[i]=sum(revenue_df[,i])
+  }
+  
+  total_revenue=sum(revenue_df1)
+  
+  return(list(frequency, revenue_df1, total_revenue))
 }
 
 fishery_stats(catch)
 
-use_data(catch, pkg=“packagename”)
