@@ -2,21 +2,6 @@
 
 library(tidyverse)
 
-# create vectors of possible fish, possible locations, and fish prices
-possible.fish = c("salmon","steelhead","shark","tuna","cod")
-possible.locations = c("A","B","C","D","E")
-fish.prices = runif(min=5, max=10, n=length(possible.fish))
-
-# Make table of prices for fish
-prices = data.frame(fish = possible.fish, price = fish.prices) %>% 
-  arrange(fish)
-
-# Generate catch data for two sites
-catch_reef = sample(possible.fish, size=50, prob = c(0.2, 0.2, 0.1, 0.1, 0.4), replace=T)
-catch_ocean = sample(possible.fish, size=50, prob = c(0.4, 0.2, 0.1, 0.1, 0.2), replace=T)
-  
-catch= data.frame(catch_reef, catch_ocean)
-
 #############################
 # Here's the function
 
@@ -71,6 +56,4 @@ fishery_stats = function(catch, graph = FALSE, total_as_text = FALSE) {
   return(list(frequency, revenue_df1, total_revenue, rev_graph))
 }
 
-
-fishery_stats(catch, graph = TRUE)
 
